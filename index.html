@@ -250,16 +250,13 @@
         let currentTransport = 'Трамвай';
         let currentCount = 1;
         let isSetupActive = true;
-        let timeLeft = 5400; // 1 час 30 минут в секундах
+        let timeLeft = 5400; // 1 час 30 минут
 
-        let isStorageAvailable = false;
+        // Чистим старую память, чтобы настройки всегда появлялись при обновлении страницы
         try {
-            localStorage.setItem('test_storage', '1');
-            localStorage.removeItem('test_storage');
-            isStorageAvailable = true;
-        } catch (e) {
-            isStorageAvailable = false;
-        }
+            localStorage.removeItem('ticket_random_id');
+            localStorage.removeItem('ticket_buy_date');
+        } catch (e) {}
 
         function selectTransport(type, btn) {
             currentTransport = type;
@@ -284,29 +281,22 @@
             document.getElementById('display-transport').innerText = 'Миколаївелектротранс ' + currentTransport;
             document.getElementById('display-count').innerText = (currentCount === 1) ? "1 квиток" : (currentCount < 5 ? currentCount + " квитки" : currentCount + " квитків");
             
-            let savedDate = isStorageAvailable ? localStorage.getItem('ticket_buy_date') : null;
-            if (!savedDate) {
-                const now = new Date();
-                const months = ['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'];
-                const minutesStr = now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes();
-                savedDate = `${now.getDate()} ${months[now.getMonth()]} о ${now.getHours()}:${minutesStr}`;
-                if (isStorageAvailable) localStorage.setItem('ticket_buy_date', savedDate);
-            }
-            document.getElementById('display-date').textContent = savedDate;
+            // Время покупки всегда генерируется заново в момент нажатия кнопки
+            const now = new Date();
+            const months = ['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'];
+            const minutesStr = now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes();
+            let currentDateStr = `${now.getDate()} ${months[now.getMonth()]} о ${now.getHours()}:${minutesStr}`;
+            document.getElementById('display-date').textContent = currentDateStr;
 
-            let savedID = isStorageAvailable ? localStorage.getItem('ticket_random_id') : null;
-            if (!savedID) {
-                savedID = Math.floor(100000 + Math.random() * 900000).toString();
-                if (isStorageAvailable) localStorage.setItem('ticket_random_id', savedID);
-            }
-            
+            // Каждый раз генерируем новый ID для билета
+            let savedID = Math.floor(100000 + Math.random() * 900000).toString();
             let formattedID = savedID.substring(0, 3) + " " + savedID.substring(3, 6);
             document.getElementById('display-num').textContent = formattedID;
             
             document.getElementById("qrcode").innerHTML = "";
             new QRCode(document.getElementById("qrcode"), { text: "https://qr.privatbank.ua/" + savedID, width: 190, height: 190 });
 
-            // Таймер ВСЕГДА начинается заново с 5400 секунд (1:30:00) при открытии/обновлении
+            // Таймер сбрасывается и стартует строго с 1:30:00
             timeLeft = 5400;
             startTimer();
         }
@@ -325,16 +315,15 @@
                     return;
                 }
 
-                // Логика изменения цвета плашки в зависимости от оставшегося времени
-                if (timeLeft <= 900) { // Меньше 15 минут — красный
+                if (timeLeft <= 900) { 
                     badge.style.color = '#e74c3c';
                     badge.style.background = 'linear-gradient(135deg, #fce4e4 0%, #fbe8e8 100%)';
                     if (badgeDot) badgeDot.style.borderColor = '#ff8f8f';
-                } else if (timeLeft <= 2700) { // Меньше 45 минут — оранжевый
+                } else if (timeLeft <= 2700) { 
                     badge.style.color = '#e67e22';
                     badge.style.background = 'linear-gradient(135deg, #fef5e7 0%, #fdf2e2 100%)';
                     if (badgeDot) badgeDot.style.borderColor = '#ffcc80';
-                } else { // Обычный зеленый стиль
+                } else { 
                     badge.style.color = '#1a1a1a';
                     badge.style.background = 'linear-gradient(135deg, #e3f6ec 0%, #e8f3f9 100%)';
                     if (badgeDot) badgeDot.style.borderColor = '#a8d5ba';
@@ -348,15 +337,8 @@
                 timeLeft--;
             }
 
-            tick(); // Мгновенный первый запуск
+            tick(); 
             setInterval(tick, 1000);
-        }
-
-        // Авто-вход при перезагрузке, если билет уже был сгенерирован
-        if (isStorageAvailable && localStorage.getItem('ticket_random_id')) {
-            window.addEventListener('DOMContentLoaded', () => {
-                generateTicket();
-            });
         }
 
         // --- ЛОГІКА ПАСХАЛКИ ---
