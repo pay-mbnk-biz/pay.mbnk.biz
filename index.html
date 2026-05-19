@@ -78,7 +78,7 @@
 
         .tg-link { margin-top: 30px; font-size: 13px; color: #1a8a8a; text-decoration: none; font-weight: 500; position: relative; z-index: 3; }
 
-        /* --- PEPE EASTER EGG --- */
+        /* --- PEPE/CAT EASTER EGG --- */
         #pepe-container {
             position: fixed;
             bottom: -100%;
@@ -90,8 +90,8 @@
             display: none;
             transition: bottom 1s ease-out, transform 1s ease-out, height 1s ease-out;
         }
-        #pepe-img { height: 100%; width: auto; object-fit: contain; }
-        #pepe-container.moving { bottom: auto; left: auto; transform: none; width: 80px; height: auto; transition: all 0.5s ease-in-out; }
+        #pepe-img { height: 100%; width: auto; object-fit: contain; border-radius: 12px; }
+        #pepe-container.moving { bottom: auto; left: auto; transform: none; width: 90px; height: auto; transition: all 0.5s ease-in-out; }
         #pepe-container.moving #pepe-img { width: 100%; height: auto; }
 
         /* --- ЕКРАН КВИТКА --- */
@@ -119,10 +119,10 @@
         .tear-line { position: relative; width: 100%; height: 20px; display: flex; align-items: center; margin: 0 0 12px 0; }
         .dashed-line { 
             width: 100%; 
-            height: 2px;
-            background-image: linear-gradient(to right, #e2e8f0 50%, rgba(255,255,255,0) 50%);
-            background-position: bottom;
-            background-size: 24px 2px;
+            height: 1.5px;
+            background-image: linear-gradient(to right, #cbd5e1 45%, rgba(255,255,255,0) 45%);
+            background-position: center;
+            background-size: 20px 1.5px;
             background-repeat: repeat-x;
         }
         .side-cut { position: absolute; width: 24px; height: 24px; background: transparent; border-radius: 50%; }
@@ -143,8 +143,26 @@
 
         .qr-section { position: relative; width: 190px; height: 190px; }
         
-        .qr-center-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 42px; height: 42px; background: white; display: flex; align-items: center; justify-content: center; z-index: 2; border-radius: 4px; }
-        .qr-center-logo img { width: 32px; height: 32px; object-fit: contain; }
+        /* Крупная картинка котика внутри белого квадрата */
+        .qr-center-logo { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            width: 46px; 
+            height: 46px; 
+            background: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 2; 
+            border-radius: 5px; 
+        }
+        .qr-center-logo img { 
+            width: 38px; 
+            height: 38px; 
+            object-fit: contain; 
+        }
         
         .ticket-num { font-size: 14px; color: #8a8a8a; font-weight: 500; margin-top: 25px; }
         .ticket-num-digits { color: #000000; font-weight: 600; }
@@ -166,7 +184,7 @@
 <body id="main-body">
 
     <div id="pepe-container">
-        <img src="pepe.png" id="pepe-img" alt="Pepe">
+        <img src="https://c.files.bbci.co.uk/16620/production/_91408619_55df76d5-2245-41c1-8031-07a4da3f313f.jpg" id="pepe-img" alt="Easter Egg Cat">
     </div>
 
     <div id="setup-screen">
@@ -351,7 +369,7 @@
             });
         }
 
-        // --- ЛОГІКА PEPE ---
+        // --- ЛОГІКА ПАСХАЛКИ ---
         const pepeContainer = document.getElementById('pepe-container');
         let tapCount = 0;
         let lastTapTime = 0;
