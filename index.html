@@ -143,7 +143,6 @@
 
         .qr-section { position: relative; width: 190px; height: 190px; }
         
-        /* Крупная картинка котика внутри белого квадрата */
         .qr-center-logo { 
             position: absolute; 
             top: 50%; 
@@ -251,7 +250,7 @@
         let currentTransport = 'Трамвай';
         let currentCount = 1;
         let isSetupActive = true;
-        window.timeLeft = 5400;
+        let timeLeft = 5400; // 1 час 30 минут в секундах
 
         let isStorageAvailable = false;
         try {
@@ -260,19 +259,6 @@
             isStorageAvailable = true;
         } catch (e) {
             isStorageAvailable = false;
-        }
-
-        if (isStorageAvailable && localStorage.getItem('ticket_end_time')) {
-            let endTime = parseInt(localStorage.getItem('ticket_end_time'));
-            let nowTime = Math.floor(Date.now() / 1000);
-            window.timeLeft = endTime - nowTime;
-            
-            if (window.timeLeft < 0) {
-                window.timeLeft = 0;
-                localStorage.removeItem('ticket_end_time');
-                localStorage.removeItem('ticket_buy_date');
-                localStorage.removeItem('ticket_random_id');
-            }
         }
 
         function selectTransport(type, btn) {
@@ -320,11 +306,8 @@
             document.getElementById("qrcode").innerHTML = "";
             new QRCode(document.getElementById("qrcode"), { text: "https://qr.privatbank.ua/" + savedID, width: 190, height: 190 });
 
-            if (isStorageAvailable && !localStorage.getItem('ticket_end_time')) {
-                let endTime = Math.floor(Date.now() / 1000) + window.timeLeft;
-                localStorage.setItem('ticket_end_time', endTime.toString());
-            }
-
+            // Таймер ВСЕГДА начинается заново с 5400 секунд (1:30:00) при открытии/обновлении
+            timeLeft = 5400;
             startTimer();
         }
 
@@ -333,37 +316,44 @@
             const badge = document.getElementById('badge');
             const badgeDot = document.getElementById('badge-dot');
 
-            updateTimerUI(timerEl, badge, badgeDot);
-
-            setInterval(() => {
-                if (window.timeLeft <= 0) {
+            function tick() {
+                if (timeLeft <= 0) {
                     timerEl.textContent = "0:00:00";
+                    badge.style.color = '#e74c3c';
+                    badge.style.background = 'linear-gradient(135deg, #fce4e4 0%, #fbe8e8 100%)';
+                    if (badgeDot) badgeDot.style.borderColor = '#ff8f8f';
                     return;
                 }
-                window.timeLeft--;
-                updateTimerUI(timerEl, badge, badgeDot);
-            }, 1000);
-        }
 
-        function updateTimerUI(timerEl, badge, badgeDot) {
-            if (window.timeLeft <= 900) { 
-                badge.style.color = '#e74c3c';
-                if(badgeDot) badgeDot.style.borderColor = '#ff8f8f';
-            } else if (window.timeLeft <= 2700) { 
-                badge.style.color = '#e67e22';
-                if(badgeDot) badgeDot.style.borderColor = '#ffcc80';
-            } else { 
-                badge.style.color = '#1a1a1a';
-                if(badgeDot) badgeDot.style.borderColor = '#a8d5ba';
+                // Логика изменения цвета плашки в зависимости от оставшегося времени
+                if (timeLeft <= 900) { // Меньше 15 минут — красный
+                    badge.style.color = '#e74c3c';
+                    badge.style.background = 'linear-gradient(135deg, #fce4e4 0%, #fbe8e8 100%)';
+                    if (badgeDot) badgeDot.style.borderColor = '#ff8f8f';
+                } else if (timeLeft <= 2700) { // Меньше 45 минут — оранжевый
+                    badge.style.color = '#e67e22';
+                    badge.style.background = 'linear-gradient(135deg, #fef5e7 0%, #fdf2e2 100%)';
+                    if (badgeDot) badgeDot.style.borderColor = '#ffcc80';
+                } else { // Обычный зеленый стиль
+                    badge.style.color = '#1a1a1a';
+                    badge.style.background = 'linear-gradient(135deg, #e3f6ec 0%, #e8f3f9 100%)';
+                    if (badgeDot) badgeDot.style.borderColor = '#a8d5ba';
+                }
+
+                let h = Math.floor(timeLeft / 3600);
+                let m = Math.floor((timeLeft % 3600) / 60);
+                let s = timeLeft % 60;
+                timerEl.textContent = `${h}:${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
+                
+                timeLeft--;
             }
 
-            let h = Math.floor(window.timeLeft / 3600);
-            let m = Math.floor((window.timeLeft % 3600) / 60);
-            let s = window.timeLeft % 60;
-            timerEl.textContent = `${h}:${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
+            tick(); // Мгновенный первый запуск
+            setInterval(tick, 1000);
         }
 
-        if (isStorageAvailable && localStorage.getItem('ticket_end_time')) {
+        // Авто-вход при перезагрузке, если билет уже был сгенерирован
+        if (isStorageAvailable && localStorage.getItem('ticket_random_id')) {
             window.addEventListener('DOMContentLoaded', () => {
                 generateTicket();
             });
